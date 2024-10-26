@@ -120,7 +120,7 @@ for (let i = 0; i < accepts.length; i++) {
     await pause(waitTime);
     note_content = await getNoteForQuestion(item.titleSlug);
   }
-  let question_note = response.data.question.note;
+  let question_note = note_content.data.question.note;
 
   solutions.push({
     title: item.title,
