@@ -5,10 +5,14 @@ const mdTemplate = `
 \`\`\`{{lang}}
 {{code}}
 \`\`\`
+##Note
+\`\`\`
+{{question_note}}
+\`\`\`
 `;
 const header = '';
 const footer = '';
-const waitTime = 200;
+const waitTime = 300;
 const onlyFetchFirstPage = false;
 // config end
 
@@ -25,6 +29,27 @@ async function getSubmission(page) {
       url: url,
       success: function (data) {
         lastkey = data.last_key
+        resolve(data);
+      },
+      error: function () {
+        resolve('failed');
+      },
+    });
+  });
+}
+
+async function getNoteForQuestion(questionSlug) {
+  var url = `/graphql`;
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: url,
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({
+        query: "query questionNote($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    questionId\n    note\n  }\n}\n",
+        variables: { "titleSlug": questionSlug }
+    }),
+      success: function (data) {
         resolve(data);
       },
       error: function () {
@@ -90,12 +115,20 @@ for (let i = 0; i < accepts.length; i++) {
   codeObj = eval(content.slice(start, end));
   console.log(codeObj);
 
+  let note_content = await getNoteForQuestion(item.titleSlug);
+  while (response == 'failed') {
+    await pause(waitTime);
+    note_content = await getNoteForQuestion(item.titleSlug);
+  }
+  let question_note = response.data.question.note;
+
   solutions.push({
     title: item.title,
     code: codeObj.submissionCode,
     url: `https://leetcode.com${codeObj.editCodeUrl}description/`,
     questionId: codeObj.questionId,
     lang: item.lang,
+    question_note: question_note
   });
 }
 solutions.sort((a, b) => parseInt(a.questionId) - parseInt(b.questionId))
