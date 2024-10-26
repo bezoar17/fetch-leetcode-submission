@@ -115,10 +115,10 @@ for (let i = 0; i < accepts.length; i++) {
   codeObj = eval(content.slice(start, end));
   console.log(codeObj);
 
-  let note_content = await getNoteForQuestion(item.titleSlug);
+  let note_content = await getNoteForQuestion(item.title_slug);
   while (note_content == 'failed') {
     await pause(waitTime);
-    note_content = await getNoteForQuestion(item.titleSlug);
+    note_content = await getNoteForQuestion(item.title_slug);
   }
   let question_note = note_content.data.question.note;
 
