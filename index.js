@@ -116,7 +116,7 @@ for (let i = 0; i < accepts.length; i++) {
   console.log(codeObj);
 
   let note_content = await getNoteForQuestion(item.titleSlug);
-  while (response == 'failed') {
+  while (note_content == 'failed') {
     await pause(waitTime);
     note_content = await getNoteForQuestion(item.titleSlug);
   }
