@@ -9,6 +9,10 @@ const mdTemplate = `
 \`\`\`
 {{question_note}}
 \`\`\`
+##QuestionContent
+\`\`\`
+{{question_content}}
+\`\`\`
 `;
 const header = '';
 const footer = '';
@@ -47,6 +51,27 @@ async function getNoteForQuestion(questionSlug) {
       contentType: "application/json",
       data: JSON.stringify({
         query: "query questionNote($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    questionId\n    note\n  }\n}\n",
+        variables: { "titleSlug": questionSlug }
+    }),
+      success: function (data) {
+        resolve(data);
+      },
+      error: function () {
+        resolve('failed');
+      },
+    });
+  });
+}
+
+async function getQuestionContent(questionSlug) {
+  var url = `/graphql`;
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: url,
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({
+        query: "query questionContent($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    content\n  }\n}\n",
         variables: { "titleSlug": questionSlug }
     }),
       success: function (data) {
@@ -122,13 +147,22 @@ for (let i = 0; i < accepts.length; i++) {
   }
   let question_note = note_content.data.question.note;
 
+  let q_content = await getQuestionContent(item.title_slug);
+  while (q_content == 'failed') {
+    await pause(waitTime);
+    q_content = await getQuestionContent(item.title_slug);
+  }
+  let question_content = q_content.data.question.content;
+  question_content = question_content.replace(/\n/g, ' ').replace(/\t/g, ' ');
+
   solutions.push({
     title: item.title,
     code: codeObj.submissionCode,
     url: `https://leetcode.com${codeObj.editCodeUrl}description/`,
     questionId: codeObj.questionId,
     lang: item.lang,
-    question_note: question_note
+    question_note: question_note,
+    question_content: question_content
   });
 }
 solutions.sort((a, b) => parseInt(a.questionId) - parseInt(b.questionId))
