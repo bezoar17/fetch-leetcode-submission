@@ -191,4 +191,6 @@ const saveData = (function () {
   };
 }());
 
-saveData(content, 'README.md')
+// saveData(content, 'README.md')
+saveData(JSON.stringify(solutions), 'LEETCODE.json')
+
