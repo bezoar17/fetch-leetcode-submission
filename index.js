@@ -17,6 +17,7 @@ const mdTemplate = `
 const header = '';
 const footer = '';
 const waitTime = 300;
+const backOffTime = 10_000; // wait 10 seconds to backoff on rate-limit
 const onlyFetchFirstPage = false;
 // config end
 
@@ -103,15 +104,23 @@ let lastkey = '';
 const submissions = [];
 for (let i = 0; onlyFetchFirstPage ? i < 1 : true; i++) {
   await pause(waitTime);
+  let retry_count = 0;
   let data = await getSubmission(i);
   while (data == 'failed') {
-    console.log('retry');
-    await pause(waitTime);
+    console.log('retry after 10s');
+    await pause(backOffTime);
     data = await getSubmission(i);
+    retry_count+=1;
+    if (retry_count > 20){break}
   }
-
+  
   console.log('success');
   [].push.apply(submissions, data.submissions_dump);
+
+  if (retry_count > 20) {
+    console.log('Quitting, retried max times with failed result');
+    break;
+  }
 
   if (!data.has_next) {
     break;
