@@ -72,7 +72,7 @@ async function getQuestionContent(questionSlug) {
       type: "POST",
       contentType: "application/json",
       data: JSON.stringify({
-        query: "query questionContent($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    content\n  }\n}\n",
+        query: "query questionContent($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    content\n difficulty\n topicTags{\n name\n id\n slug}\n  }\n}\n",
         variables: { "titleSlug": questionSlug }
     }),
       success: function (data) {
@@ -162,6 +162,8 @@ for (let i = 0; i < accepts.length; i++) {
     q_content = await getQuestionContent(item.title_slug);
   }
   let question_content = q_content.data.question.content;
+  let question_difficulty = q_content.data.question.difficulty;
+  let topic_tags = q_content.data.question.topicTags.map(i => i.slug);
   question_content = question_content.replace(/\n/g, ' ').replace(/\t/g, ' ');
 
   solutions.push({
@@ -171,7 +173,9 @@ for (let i = 0; i < accepts.length; i++) {
     questionId: codeObj.questionId,
     lang: item.lang,
     question_note: question_note,
-    question_content: question_content
+    question_content: question_content,
+    question_difficulty: question_difficulty,
+    question_topics: topic_tags
   });
 }
 solutions.sort((a, b) => parseInt(a.questionId) - parseInt(b.questionId))
